@@ -182,137 +182,118 @@ and letterhead.
 | `structlog` | ≥24.1 | Structured key=value logging, module-level filtering |
 | `rich` | ≥13.7 | Color-coded terminal rendering of structured logs |
 
-### Dev / Build
-
-| Library | Version | Why |
-|---------|---------|-----|
-| `conda` | ≥23 | Environment management on Windows (handles non-pip deps like Tesseract, poppler) |
-| `pytest` | ≥8 | Testing |
-| `pytest-asyncio` | ≥0.23 | Async test support |
-| `ruff` | latest | Linting + formatting (replaces black + flake8) |
-| `mypy` | latest | Type checking |
-
-### Models via Ollama
-
-| Model | Role | Why |
-|-------|------|-----|
-| `gemma3:7b` | Instruction-to-Doc writer | Strong general reasoning, 7B fits in 8GB RAM |
-| `qwen2.5-coder:7b` | Code-to-Doc writer | Outperforms Gemma at code comprehension at same size |
-| `nomic-embed-text` | Embeddings | 137M params, extremely fast on CPU, 768-dim vectors |
-
----
-
-## 4. Project Structure
+#### 4. Project Structure
 
 ```
 docforge/
 │
 ├── launcher.py                    # Entry point: Textual TUI + Typer CLI
 │
-├── app/
-│   └── main.py                    # Streamlit app entry point
-│
-├── core/
-│   ├── __init__.py
-│   ├── config.py                  # Pydantic settings, TOML loader
-│   ├── constants.py               # All system-wide constants
-│   ├── errors.py                  # Domain exception hierarchy
-│   └── logger.py                  # structlog + Rich setup, module switches
-│
-├── plugins/
-│   ├── __init__.py
-│   ├── registry.py                # Plugin discovery, registration, validation
-│   ├── loader.py                  # ZIP install, importlib loading
-│   ├── base.py                    # IngestorPlugin, OutputPlugin base classes
-│   └── installed/                 # Extracted plugin ZIPs live here
-│       └── .gitkeep
-│
-├── ingest/
-│   ├── __init__.py
-│   ├── pipeline.py                # Orchestrates full ingestion flow
-│   ├── file_cache.py              # Encrypted file cache manager
-│   ├── chunker.py                 # Context-aware chunking utilities
-│   └── registry.py                # Maps extension → plugin
-│
-├── ocr/
-│   ├── __init__.py
-│   ├── detector.py                # Decides: text PDF vs scanned
-│   ├── preprocessor.py            # OpenCV: deskew, denoise, binarize
-│   ├── extractor.py               # Tesseract OCR caller
-│   └── corrector.py               # Post-OCR correction (layout, spacing, artifacts)
-│
-├── template/
-│   ├── __init__.py
-│   ├── analyzer.py                # Infers template structure from example doc
-│   ├── store.py                   # Saves/loads templates per project
-│   └── renderer.py                # Applies template styles to generated content
-│
-├── embeddings/
-│   ├── __init__.py
-│   ├── client.py                  # Ollama embedding calls
-│   └── store.py                   # LanceDB operations (upsert, search, delete)
-│
-├── agents/
-│   ├── __init__.py
-│   ├── base.py                    # BaseAgent class, context budget management
-│   ├── itd/                       # Instruction-to-Document agents
+├── docforge/                      # Main Python package source code
+│   ├── app/
+│   │   └── main.py                # Streamlit app entry point
+│   │
+│   ├── core/
 │   │   ├── __init__.py
-│   │   ├── planner.py             # Breaks instruction into section plan
-│   │   ├── retriever.py           # Fetches relevant chunks per section
-│   │   ├── writer.py              # Generates section content (streaming)
-│   │   └── reviewer.py            # Reviews + refines each section
-│   └── ctd/                       # Code-to-Document agents
+│   │   ├── config.py              # Pydantic settings, TOML loader
+│   │   ├── constants.py           # All system-wide constants
+│   │   ├── errors.py              # Domain exception hierarchy
+│   │   └── logger.py              # structlog + Rich setup, module switches
+│   │
+│   ├── plugins/
+│   │   ├── __init__.py
+│   │   ├── registry.py            # Plugin discovery, registration, validation
+│   │   ├── loader.py              # ZIP install, importlib loading
+│   │   ├── base.py                # IngestorPlugin, OutputPlugin base classes
+│   │   └── installed/             # Extracted plugin ZIPs live here
+│   │       └── .gitkeep
+│   │
+│   ├── ingest/
+│   │   ├── __init__.py
+│   │   ├── pipeline.py            # Orchestrates full ingestion flow
+│   │   ├── file_cache.py          # Encrypted file cache manager
+│   │   ├── chunker.py             # Context-aware chunking utilities
+│   │   └── registry.py            # Maps extension → plugin
+│   │
+│   ├── ocr/
+│   │   ├── __init__.py
+│   │   ├── detector.py            # Decides: text PDF vs scanned
+│   │   ├── preprocessor.py        # OpenCV: deskew, denoise, binarize
+│   │   ├── extractor.py           # Tesseract OCR caller
+│   │   └── corrector.py           # Post-OCR correction (layout, spacing, artifacts)
+│   │
+│   ├── template/
+│   │   ├── __init__.py
+│   │   ├── analyzer.py            # Infers template structure from example doc
+│   │   ├── store.py               # Saves/loads templates per project
+│   │   └── renderer.py            # Applies template styles to generated content
+│   │
+│   ├── embeddings/
+│   │   ├── __init__.py
+│   │   ├── client.py              # Ollama embedding calls
+│   │   └── store.py               # LanceDB operations (upsert, search, delete)
+│   │
+│   ├── agents/
+│   │   ├── __init__.py
+│   │   ├── base.py                # BaseAgent class, context budget management
+│   │   ├── itd/                   # Instruction-to-Document agents
+│   │   │   ├── __init__.py
+│   │   │   ├── planner.py         # Breaks instruction into section plan
+│   │   │   ├── retriever.py       # Fetches relevant chunks per section
+│   │   │   ├── writer.py          # Generates section content (streaming)
+│   │   │   └── reviewer.py        # Reviews + refines each section
+│   │   └── ctd/                   # Code-to-Document agents
+│   │       ├── __init__.py
+│   │       ├── parser.py          # tree-sitter AST extraction
+│   │       ├── analyzer.py        # Understands code intent and relationships
+│   │       ├── writer.py          # Generates doc section from code analysis
+│   │       └── reviewer.py        # Reviews for technical accuracy
+│   │
+│   ├── llm/
+│   │   ├── __init__.py
+│   │   ├── client.py              # Async Ollama streaming client
+│   │   └── prompt_builder.py      # Assembles system + context + instruction prompts
+│   │
+│   ├── output/
+│   │   ├── __init__.py
+│   │   ├── pipeline.py            # Orchestrates output generation
+│   │   ├── docx_writer.py         # python-docx output with template styles
+│   │   ├── pdf_writer.py          # weasyprint HTML-to-PDF
+│   │   ├── md_writer.py           # Markdown output
+│   │   ├── excel_writer.py        # openpyxl output
+│   │   └── image_writer.py        # Pillow image output
+│   │
+│   ├── security/
+│   │   ├── __init__.py
+│   │   └── encryption.py          # Fernet key management, encrypt/decrypt
+│   │
+│   ├── projects/
+│   │   ├── __init__.py
+│   │   └── manager.py             # Project namespace CRUD
+│   │
+│   ├── ui/
+│   │   ├── __init__.py
+│   │   ├── pages/
+│   │   │   ├── upload.py          # Upload tab
+│   │   │   ├── files.py           # Files tab (AgGrid table)
+│   │   │   ├── generate.py        # Generate tab (streaming agent display)
+│   │   │   ├── logs.py            # Logs viewer tab
+│   │   │   └── settings.py        # Settings tab (models, logging switches, plugins)
+│   │   └── components/
+│   │       ├── agent_panel.py     # st.status() agent activity component
+│   │       ├── log_panel.py       # Log display component
+      │       └── file_table.py      # AgGrid file table component
+│   │
+│   └── tui/
 │       ├── __init__.py
-│       ├── parser.py              # tree-sitter AST extraction
-│       ├── analyzer.py            # Understands code intent and relationships
-│       ├── writer.py              # Generates doc section from code analysis
-│       └── reviewer.py            # Reviews for technical accuracy
-│
-├── llm/
-│   ├── __init__.py
-│   ├── client.py                  # Async Ollama streaming client
-│   └── prompt_builder.py          # Assembles system + context + instruction prompts
-│
-├── output/
-│   ├── __init__.py
-│   ├── pipeline.py                # Orchestrates output generation
-│   ├── docx_writer.py             # python-docx output with template styles
-│   ├── pdf_writer.py              # weasyprint HTML-to-PDF
-│   ├── md_writer.py               # Markdown output
-│   ├── excel_writer.py            # openpyxl output
-│   └── image_writer.py            # Pillow image output
-│
-├── security/
-│   ├── __init__.py
-│   └── encryption.py              # Fernet key management, encrypt/decrypt
-│
-├── projects/
-│   ├── __init__.py
-│   └── manager.py                 # Project namespace CRUD
-│
-├── ui/
-│   ├── __init__.py
-│   ├── pages/
-│   │   ├── upload.py              # Upload tab
-│   │   ├── files.py               # Files tab (AgGrid table)
-│   │   ├── generate.py            # Generate tab (streaming agent display)
-│   │   ├── logs.py                # Logs viewer tab
-│   │   └── settings.py            # Settings tab (models, logging switches, plugins)
-│   └── components/
-│       ├── agent_panel.py         # st.status() agent activity component
-│       ├── log_panel.py           # Log display component
-│       └── file_table.py          # AgGrid file table component
-│
-├── tui/
-│   ├── __init__.py
-│   ├── app.py                     # Textual TUI application
-│   ├── screens/
-│   │   ├── main_screen.py         # Main launcher dashboard
-│   │   └── log_screen.py          # Live log output screen
-│   └── widgets/
-│       ├── service_status.py      # Service health indicators
-│       ├── log_switches.py        # Checkbox panel for logging modules
-│       └── service_log_panel.py   # Scrolling log panel per service
+│       ├── app.py                 # Textual TUI application
+│       ├── screens/
+│       │   ├── main_screen.py     # Main launcher dashboard
+│       │   └── log_screen.py      # Live log output screen
+│       └── widgets/
+│           ├── service_status.py    # Service health indicators
+│           ├── log_switches.py      # Checkbox panel for logging modules
+│           └── service_log_panel.py # Scrolling log panel per service
 │
 ├── tests/
 │   ├── unit/
@@ -336,7 +317,6 @@ docforge/
 ├── requirements.txt               # Production pip requirements
 ├── requirements-dev.txt           # Dev-only dependencies
 └── pyproject.toml                 # Tool config (ruff, mypy, pytest)
-```
 
 ---
 

@@ -230,7 +230,7 @@ class GraphState(TypedDict):
 ## 3. File Structure
 
 ```
-agents/
+docforge/agents/
 └── graph/
     ├── __init__.py
     ├── state.py           ← GraphState, SectionPlan, SectionDraft, ValidationResult
