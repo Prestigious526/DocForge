@@ -47,17 +47,22 @@ WORKDIR /app
 RUN pip install --upgrade pip setuptools wheel
 
 # Copy dependency files
-COPY requirements.txt .
-COPY requirements-dev.txt .
+COPY pyproject.toml uv.lock ./
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Install dependencies
-RUN pip install -r requirements.txt
-RUN pip install -r requirements-dev.txt
+RUN uv pip install --system -r pyproject.toml
 
-# Install dev tools
-RUN pip install \
+# Install dev tools and UI/testing utilities
+RUN uv pip install --system \
     ipython \
-    watchdog
+    watchdog \
+    pytest \
+    rich \
+    typer \
+    textual
 
 # Copy project files
 COPY tests .
